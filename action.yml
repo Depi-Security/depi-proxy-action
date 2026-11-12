@@ -1,0 +1,49 @@
+name: depi-proxy
+description: A local npm registry proxy that refuses packages blocked by Depi before they are installed.
+author: L&H
+branding:
+  icon: shield
+  color: green
+
+inputs:
+  working-directory:
+    description: Directory of the npm project (its .npmrc is checked for scoped registries that bypass the proxy).
+    default: .
+  depi-org-token:
+    description: >-
+      Depi organisation key (`do_`, sent as a Bearer; an older org token as X-Auth-Api-Key). Preferred: not rate-limited. Pass it from a
+      secret. Fork pull requests get no secrets: their downloads are served without a check and reported.
+    required: false
+  depi-api-key:
+    description: Depi user API key (sent as Bearer, rate-limited to 200 requests/minute).
+    required: false
+  depi-url:
+    description: Depi API base URL.
+    default: https://api.landh.tech
+  fail-closed:
+    description: "enforcement: enforce only — refuse downloads when Depi is unreachable (5xx, timeout, rate limit), so the install fails. Default false: serve them and report them as unavailable."
+    default: "false"
+  registry:
+    description: Upstream npm registry.
+    default: https://registry.npmjs.org
+  port:
+    description: Local port of the proxy.
+    default: "4873"
+  enforcement:
+    description: >-
+      warn (default): blocked packages are served and reported (job summary, annotations).
+      enforce: the proxy refuses them, so the install fails; so does a missing or invalid Depi token.
+    default: warn
+  binary-path:
+    description: Use this depi-proxy binary instead of the one shipped with the action (tests).
+    required: false
+
+outputs:
+  registry-url:
+    description: URL of the proxy.
+
+runs:
+  using: node24
+  main: action/main.mjs
+  post: action/post.mjs
+  post-if: always()

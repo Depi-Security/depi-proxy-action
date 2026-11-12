@@ -1,0 +1,76 @@
+name: depi-proxy setup-node
+description: >-
+  Drop-in replacement for actions/setup-node: starts depi-proxy, then sets up Node. Every
+  following install goes through the proxy; with enforcement: enforce, a blocked package fails the
+  install. Packages restored from the package manager cache are not downloaded, so not checked.
+author: L&H
+branding:
+  icon: shield
+  color: green
+
+inputs:
+  # actions/setup-node
+  node-version: { description: "actions/setup-node: node-version", required: false }
+  node-version-file: { description: "actions/setup-node: node-version-file", required: false }
+  architecture: { description: "actions/setup-node: architecture", required: false }
+  check-latest: { description: "actions/setup-node: check-latest", default: "false" }
+  cache: { description: "actions/setup-node: cache (npm, yarn, pnpm). Packages restored from it do not go through depi-proxy.", required: false }
+  cache-dependency-path: { description: "actions/setup-node: cache-dependency-path", required: false }
+  package-manager-cache: { description: "actions/setup-node: package-manager-cache. Packages restored from the cache are not downloaded, so they do not go through depi-proxy.", default: "true" }
+  registry-url: { description: "actions/setup-node: registry-url", required: false }
+  scope: { description: "actions/setup-node: scope", required: false }
+  always-auth: { description: "actions/setup-node: always-auth", default: "false" }
+  token: { description: "actions/setup-node: token used to fetch Node.js versions", default: "${{ github.server_url == 'https://github.com' && github.token || '' }}" }
+  mirror: { description: "actions/setup-node: mirror to download Node.js from", required: false }
+  mirror-token: { description: "actions/setup-node: token for the mirror", required: false }
+  # depi-proxy
+  depi-org-token: { description: "Depi organisation key (`do_`, or an older org token). Pass it from a secret.", required: false }
+  depi-api-key: { description: "Depi user API key (Bearer, rate-limited).", required: false }
+  depi-url: { description: "Depi API base URL.", default: "https://api.landh.tech" }
+  working-directory: { description: "Directory of the npm project (its .npmrc is checked for scoped registries).", default: "." }
+  enforcement: { description: "warn (default): report only. enforce: the proxy refuses blocked packages, so the install fails.", default: "warn" }
+  fail-closed: { description: "enforce only: refuse downloads when Depi is unreachable (5xx, timeout, rate limit).", default: "false" }
+  registry: { description: "Upstream npm registry.", default: "https://registry.npmjs.org" }
+  port: { description: "Local port of the proxy.", default: "4873" }
+  binary-path: { description: "Use this depi-proxy binary instead of the shipped one (tests).", required: false }
+
+outputs:
+  node-version: { description: "Installed Node.js version.", value: "${{ steps.node.outputs.node-version }}" }
+  cache-hit: { description: "Whether the package manager cache was hit.", value: "${{ steps.node.outputs.cache-hit }}" }
+  registry-url: { description: "Guarded registry proxy.", value: "http://127.0.0.1:${{ inputs.port }}/" }
+
+runs:
+  using: composite
+  steps:
+    # The root action, from this repository at this commit (`$/.`): its post step stops the proxy
+    # and reports what it saw at the end of the job (a composite action has no post step itself).
+    - name: depi-proxy — start the proxy
+      uses: $/.
+      with:
+        depi-org-token: ${{ inputs.depi-org-token }}
+        depi-api-key: ${{ inputs.depi-api-key }}
+        depi-url: ${{ inputs.depi-url }}
+        working-directory: ${{ inputs.working-directory }}
+        fail-closed: ${{ inputs.fail-closed }}
+        enforcement: ${{ inputs.enforcement }}
+        registry: ${{ inputs.registry }}
+        port: ${{ inputs.port }}
+        binary-path: ${{ inputs.binary-path }}
+
+    - name: Set up Node.js
+      id: node
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+      with:
+        node-version: ${{ inputs.node-version }}
+        node-version-file: ${{ inputs.node-version-file }}
+        architecture: ${{ inputs.architecture }}
+        check-latest: ${{ inputs.check-latest }}
+        cache: ${{ inputs.cache }}
+        cache-dependency-path: ${{ inputs.cache-dependency-path }}
+        package-manager-cache: ${{ inputs.package-manager-cache }}
+        registry-url: ${{ inputs.registry-url }}
+        scope: ${{ inputs.scope }}
+        always-auth: ${{ inputs.always-auth }}
+        token: ${{ inputs.token }}
+        mirror: ${{ inputs.mirror }}
+        mirror-token: ${{ inputs.mirror-token }}

@@ -1,0 +1,16 @@
+Copyright (c) 2026 Lupin & Holmes. All rights reserved.
+
+This repository holds the depi-proxy GitHub Action and the depi-proxy binaries it runs (the
+"Software"). The Software is proprietary. It is not open source.
+
+You may use the Software, unmodified, in your own continuous integration workflows, only with an
+active Depi account and an organisation token issued by Depi, and only under the terms of your
+agreement with Lupin & Holmes.
+
+You may not copy, modify, redistribute, sublicense or sell the Software, nor reverse engineer,
+decompile or disassemble the binaries, except to the extent the law allows it despite this
+restriction.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. IN NO EVENT
+SHALL LUPIN & HOLMES BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF
+THE SOFTWARE, EXCEPT AS YOUR AGREEMENT WITH LUPIN & HOLMES PROVIDES.
